@@ -45,14 +45,15 @@ public class HttpUtils {
     }
 
     /**
-     * GET string参数
+     * 读取响应数据并转化成string
      */
-    public static String sendGet(String url, String strParams) {
-        Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultGet(url, strParams);
+    private static String getString(Pair<CloseableHttpResponse, HttpRequestBase> pair) {
         CloseableHttpResponse key = pair.getKey();
         CommonUtils.httpIs200(key.getStatusLine());
+
         HttpRequestBase value = pair.getValue();
         try {
+
             return EntityUtils.toString(key.getEntity());
         } catch (IOException e) {
             log.error("读取响应出错", e);
@@ -64,6 +65,14 @@ public class HttpUtils {
             } catch (IOException ignored) {
             }
         }
+    }
+
+    /**
+     * GET string参数
+     */
+    public static String sendGet(String url, String strParams) {
+        Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultGet(url, strParams);
+        return getString(pair);
     }
 
     /**
@@ -92,26 +101,12 @@ public class HttpUtils {
 
     /**
      * 发送Post请求，String参数
+     * 命令
+     *
      */
     public static <T extends HttpResponse> T sendPost(String url, String strParams, boolean isJsonRequest, Class<T> tClass) {
         Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultPost(url, strParams, isJsonRequest);
-        CloseableHttpResponse key = pair.getKey();
-        CommonUtils.httpIs200(key.getStatusLine());
-        HttpRequestBase value = pair.getValue();
-        String result;
-        try {
-            result = EntityUtils.toString(key.getEntity());
-        } catch (IOException e) {
-            log.error("读取响应出错", e);
-            throw new RemoteHttpCallException(e.getMessage(), e);
-        } finally {
-            value.releaseConnection();
-            try {
-                key.close();
-            } catch (IOException ignored) {
-            }
-        }
-        return getT(tClass, result);
+        return getT(tClass, getString(pair));
     }
 
     /**
@@ -119,21 +114,7 @@ public class HttpUtils {
      */
     public static String sendPost(String url, String strParams, boolean isJsonRequest) {
         Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultPost(url, strParams, isJsonRequest);
-        CloseableHttpResponse key = pair.getKey();
-        CommonUtils.httpIs200(key.getStatusLine());
-        HttpRequestBase value = pair.getValue();
-        try {
-            return EntityUtils.toString(key.getEntity());
-        } catch (IOException e) {
-            log.error("读取响应出错", e);
-            throw new RemoteHttpCallException(e.getMessage(), e);
-        } finally {
-            value.releaseConnection();
-            try {
-                key.close();
-            } catch (IOException ignored) {
-            }
-        }
+        return getString(pair);
     }
 
     /**
@@ -141,26 +122,13 @@ public class HttpUtils {
      */
     public static String sendPost(String url, Map<String, ?> mapParams, boolean isJsonRequest) {
         Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultPost(url, mapParams, isJsonRequest);
-        CloseableHttpResponse key = pair.getKey();
-        CommonUtils.httpIs200(key.getStatusLine());
-        HttpRequestBase value = pair.getValue();
-        try {
-            return EntityUtils.toString(key.getEntity());
-        } catch (IOException e) {
-            log.error("读取响应出错", e);
-            throw new RemoteHttpCallException(e.getMessage(), e);
-        } finally {
-            value.releaseConnection();
-            try {
-                key.close();
-            } catch (IOException ignored) {
-            }
-        }
+        return getString(pair);
     }
 
     /**
-     * 发送Post请求，Map参数
+     * 返回全部的数据，不建议使用，注意流的关闭
      */
+    @Deprecated
     public static Pair<CloseableHttpResponse, HttpRequestBase> sendPostReAll(String url, Map<String, ?> mapParams, boolean isJsonRequest) {
         return HttpClient.sendDefaultPost(url, mapParams, isJsonRequest);
     }
@@ -170,22 +138,6 @@ public class HttpUtils {
      */
     public static <T extends HttpResponse> T sendPost(String url, Map<String, ?> mapParams, boolean isJsonRequest, Class<T> tClass) {
         Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultPost(url, mapParams, isJsonRequest);
-        CloseableHttpResponse key = pair.getKey();
-        CommonUtils.httpIs200(key.getStatusLine());
-        HttpRequestBase value = pair.getValue();
-        String result;
-        try {
-            result = EntityUtils.toString(key.getEntity());
-        } catch (IOException e) {
-            log.error("读取响应出错", e);
-            throw new RemoteHttpCallException(e.getMessage(), e);
-        } finally {
-            value.releaseConnection();
-            try {
-                key.close();
-            } catch (IOException ignored) {
-            }
-        }
-        return getT(tClass, result);
+        return getT(tClass, getString(pair));
     }
 }
