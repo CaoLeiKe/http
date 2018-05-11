@@ -5,7 +5,6 @@ import com.zd.core.http.pojo.HttpResponse;
 import com.zd.exception.RemoteHttpCallException;
 import com.zd.utils.CommonUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -75,34 +74,10 @@ public class HttpUtils {
         return getString(pair);
     }
 
-    /**
-     * GET string参数
-     */
-    public static String sendGetReBase64(String url, String strParams) {
-        Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultGet(url, strParams);
-        CloseableHttpResponse key = pair.getKey();
-        CommonUtils.httpIs200(key.getStatusLine());
-        HttpRequestBase value = pair.getValue();
-        try {
-            byte[] bytes = CommonUtils.input2byte(key.getEntity().getContent());
-            return Base64.encodeBase64String(bytes);
-        } catch (IOException e) {
-            log.error("读取响应出错", e);
-            throw new RemoteHttpCallException(e.getMessage(), e);
-        } finally {
-            value.releaseConnection();
-            try {
-                key.close();
-            } catch (IOException ignored) {
-            }
-        }
-    }
-
 
     /**
      * 发送Post请求，String参数
      * 命令
-     *
      */
     public static <T extends HttpResponse> T sendPost(String url, String strParams, boolean isJsonRequest, Class<T> tClass) {
         Pair<CloseableHttpResponse, HttpRequestBase> pair = HttpClient.sendDefaultPost(url, strParams, isJsonRequest);
@@ -131,6 +106,14 @@ public class HttpUtils {
     @Deprecated
     public static Pair<CloseableHttpResponse, HttpRequestBase> sendPostReAll(String url, Map<String, ?> mapParams, boolean isJsonRequest) {
         return HttpClient.sendDefaultPost(url, mapParams, isJsonRequest);
+    }
+
+    /**
+     * 返回全部的数据，不建议使用，注意流的关闭
+     */
+    @Deprecated
+    public static Pair<CloseableHttpResponse, HttpRequestBase> sendPostReAll(String url, String strParams, boolean isJsonRequest) {
+        return HttpClient.sendDefaultPost(url, strParams, isJsonRequest);
     }
 
     /**
