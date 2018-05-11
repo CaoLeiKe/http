@@ -2,6 +2,7 @@ package com.zd.core.http;
 
 import com.zd.core.http.pojo.juhe.JuheVO;
 import com.zd.utils.CommonUtils;
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpRequestBase;
@@ -15,8 +16,6 @@ import java.util.Map;
  */
 public class Test {
 
-    // 登录页面
-    private static String logPage = "http://sso.wyschina.com/login.jsp";
 
     // 获取验证码接口
     private static String captchaUrl = "http://sso.wyschina.com/createimage";
@@ -35,16 +34,14 @@ public class Test {
      * 3: 携带验证码及其cookie进行登录
      */
     public static void main(String[] args) throws IOException {
-        // 请求登录页面
-        HttpUtils.sendGet(logPage, "url=http%3A%2F%2Fw.wyschina.com%2Fcustom%2Flogin.action%3Faction%3Dhttp%253A%252F%252Fwww.wyschina.com%252F");
-        // 再次请求验证码
-        String base64String = HttpUtils.sendGetReBase64(captchaUrl, "Rgb=255|0|0&r=4267");
+        // 请求验证码
+        Pair<CloseableHttpResponse, HttpRequestBase> captchPair = HttpUtils.sendPostReAll(captchaUrl, "Rgb=255|0|0&r=4267", false);
 
         // 请求打码工具
         Map<String, String> juheParamMap = new HashMap<>();
         juheParamMap.put("key", "c8a905de25c8df8ae8f5c3758fe00168");
         juheParamMap.put("codeType", "4004");
-        juheParamMap.put("base64Str", base64String);
+        juheParamMap.put("base64Str", Base64.encodeBase64String(CommonUtils.input2byte(captchPair.getKey().getEntity().getContent())));
         JuheVO vo = HttpUtils.sendPost("http://op.juhe.cn/vercode/index", juheParamMap, false, JuheVO.class);
 
         // 进行登录
