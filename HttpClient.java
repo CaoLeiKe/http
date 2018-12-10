@@ -123,7 +123,7 @@ class HttpClient {
         try {
             log.info("*****远程{} Start*****", httpMethod.getMethod());
             log.info("url:{}", url);
-            if (log.isErrorEnabled()) {
+            if (log.isDebugEnabled()) {
                 log.debug("mapHeaders:{}", mapHeaders);
                 if (requestData instanceof StringEntity) {
                     try {
